@@ -149,8 +149,6 @@ class PlaylistsService {
 
     const result = await this._pool.query(query);
 
-    console.log(result.rows);
-
     if (!result.rows.length) {
       throw new InvariantError('Aktivitas playlist gagal ditambahkan');
     }

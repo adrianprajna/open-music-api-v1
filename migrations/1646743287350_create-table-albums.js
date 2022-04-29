@@ -12,6 +12,10 @@ exports.up = (pgm) => {
       type: 'integer',
       notNull: true,
     },
+    coverUrl: {
+      type: 'VARCHAR(100)',
+      notNull: false,
+    },
   });
 };
 
