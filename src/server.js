@@ -2,6 +2,7 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const path = require('path');
+const Inert = require('@hapi/inert');
 
 const albums = require('./api/albums');
 const AlbumsService = require('./services/postgres/AlbumsService');
@@ -36,8 +37,12 @@ const uploads = require('./api/uploads');
 const StorageService = require('./services/storage/StorageService');
 const UploadsValidator = require('./validator/uploads');
 
+const CacheService = require('./services/redis/CacheService');
+const ClientError = require('./exceptions/ClientError');
+
 const init = async () => {
-  const albumsService = new AlbumsService();
+  const cacheService = new CacheService();
+  const albumsService = new AlbumsService(cacheService);
   const songsService = new SongsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
@@ -58,6 +63,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -141,6 +149,21 @@ const init = async () => {
       },
     },
   ]);
+
+  server.ext('onPreResponse', (request, h) => {
+    const { response } = request;
+
+    if (response instanceof ClientError) {
+      const newResponse = h.response({
+        status: 'fail',
+        message: response.message,
+      });
+      newResponse.code(response.statusCode);
+      return newResponse;
+    }
+
+    return response.continue || response;
+  });
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

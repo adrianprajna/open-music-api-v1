@@ -1,5 +1,3 @@
-const { responseError } = require('../../utils/response');
-
 class CollaborationsHandler {
   constructor(collaborationsService, playlistsService, validator) {
     this._collaborationsService = collaborationsService;
@@ -11,45 +9,37 @@ class CollaborationsHandler {
   }
 
   async postCollaborationHandler(request, h) {
-    try {
-      this._validator.validateCollaborationPayload(request.payload);
-      const { id: owner } = request.auth.credentials;
-      const { playlistId, userId } = request.payload;
+    this._validator.validateCollaborationPayload(request.payload);
+    const { id: owner } = request.auth.credentials;
+    const { playlistId, userId } = request.payload;
 
-      await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
-      const collaborationId = await this._collaborationsService.addCollaboration(
-        playlistId, userId,
-      );
+    await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+    const collaborationId = await this._collaborationsService.addCollaboration(
+      playlistId, userId,
+    );
 
-      const response = h.response({
-        status: 'success',
-        data: {
-          collaborationId,
-        },
-      });
-      response.code(201);
-      return response;
-    } catch (error) {
-      return responseError(error, h);
-    }
+    const response = h.response({
+      status: 'success',
+      data: {
+        collaborationId,
+      },
+    });
+    response.code(201);
+    return response;
   }
 
-  async deleteCollaborationHandler(request, h) {
-    try {
-      this._validator.validateCollaborationPayload(request.payload);
-      const { id: owner } = request.auth.credentials;
-      const { playlistId, userId } = request.payload;
+  async deleteCollaborationHandler(request) {
+    this._validator.validateCollaborationPayload(request.payload);
+    const { id: owner } = request.auth.credentials;
+    const { playlistId, userId } = request.payload;
 
-      await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
-      await this._collaborationsService.deleteCollaboration(playlistId, userId);
+    await this._playlistsService.verifyPlaylistOwner(playlistId, owner);
+    await this._collaborationsService.deleteCollaboration(playlistId, userId);
 
-      return {
-        status: 'success',
-        message: 'Kolaborasi berhasil dihapus',
-      };
-    } catch (error) {
-      return responseError(error, h);
-    }
+    return {
+      status: 'success',
+      message: 'Kolaborasi berhasil dihapus',
+    };
   }
 }
 

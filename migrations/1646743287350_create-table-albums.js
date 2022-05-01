@@ -12,7 +12,7 @@ exports.up = (pgm) => {
       type: 'integer',
       notNull: true,
     },
-    coverUrl: {
+    cover: {
       type: 'VARCHAR(100)',
       notNull: false,
     },
